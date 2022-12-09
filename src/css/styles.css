@@ -2,14 +2,9 @@
   box-sizing: border-box;
 }
 
-/* body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #212121;
-  line-height: 1.5;
-} */
+body {
+  padding-top: 50px;
+}
 
 .search-form {
   position: fixed;
@@ -21,3 +16,48 @@
   padding-top: 5px;
   padding-bottom: 5px;
 }
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: auto;
+  margin-right: auto;
+
+  gap: 30px;
+}
+
+.gallery-img {
+  display: block;
+  width: 250px;
+  height: 150px;
+}
+
+/* .info {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 250px;
+} */
+
+.info-item {
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.5px;
+}
+
+/* .load-more {
+  background-color: white;
+  border-radius: 3px;
+  margin-left: auto;
+  margin-right: auto;
+} */
+
+/* .btn-invisible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0000);
+} */

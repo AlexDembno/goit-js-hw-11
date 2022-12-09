@@ -1,35 +1,98 @@
 const { Notify } = require('notiflix');
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import axios from 'axios';
 
-const formEl = document.querySelector('.search-form');
+const refs = {
+  formEl: document.querySelector('.search-form'),
+  inputEl: document.querySelector('.search-form_input'),
+  divEl: document.querySelector('.gallery'),
+  btnEl: document.querySelector('.load-more'),
+};
 
-const KEY = '';
-
+const KEY = '31934328-4f49ab69ab8cdfa2acbd8f5df';
 const baseUrl = `https://pixabay.com/api/?key=${KEY}`;
 
-formEl.addEventListener('submit', event => {
+let PAGE = 1;
+
+refs.formEl.addEventListener('submit', getUser);
+
+async function getUser(event) {
   event.preventDefault();
-  console.log(event.currentTarget.elements.searchQuery.value);
+  console.log(event.target.elements.searchQuery.value);
   const searchText = event.currentTarget.elements.searchQuery.value;
 
-  `&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true`;
-});
+  try {
+    const { data } = await axios.get(
+      `${baseUrl}&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true&page=${PAGE}&per_page=40`
+    );
+    const image = data.hits;
+    render(image);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
-const sample = `<div class="photo-card">
-  <img src="" alt="" loading="lazy" />
+refs.btnEl.addEventListener('click', loadMore);
+
+async function loadMore(event) {
+  refs.inputEl.addEventListener('input', async () => {
+    console.log(refs.inputEl.value);
+    event.preventDefault();
+    PAGE += 1;
+    console.log(event.target.elements.searchQuery.value);
+    const searchText = input.value;
+
+    try {
+      const { data } = await axios.get(
+        `${baseUrl}&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true&page=${PAGE}&per_page=40`
+      );
+      const image = data.hits;
+      render(image);
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  // try {
+  //   const { data } = await axios.get(
+  //     `${baseUrl}&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true&page=${PAGE}&per_page=40`
+  //   );
+  //   const image = data.hits;
+  //   render(image);
+  // } catch (error) {
+  //   console.error(error);
+  // }
+}
+
+function render(image) {
+  const markup = image
+    .map(
+      ({
+        webformatURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => `<div class="photo-card">
+  <img class="gallery-img" src="${webformatURL}" alt="${tags}" loading="lazy" />
   <div class="info">
     <p class="info-item">
-      <b>Likes</b>
+      <b>${likes}&ensp;likes</b>
     </p>
     <p class="info-item">
-      <b>Views</b>
+      <b>${views}&ensp;Views</b>
     </p>
     <p class="info-item">
-      <b>Comments</b>
+      <b>${comments}&ensp;Comments</b>
     </p>
     <p class="info-item">
-      <b>Downloads</b>
+      <b>${downloads}&ensp;Downloads</b>
     </p>
   </div>
-</div>`;
+</div>`
+    )
+    .join('');
+  refs.divEl.insertAdjacentHTML('afterbegin', markup);
+}
