@@ -20,6 +20,8 @@ body {
 .gallery {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
+
   margin-left: auto;
   margin-right: auto;
 
@@ -32,24 +34,17 @@ body {
   height: 150px;
 }
 
-/* .info {
-  display: flex;
-  flex-wrap: wrap;
-  max-width: 250px;
-} */
-
 .info-item {
   text-align: center;
   font-size: 10px;
   line-height: 1.5px;
 }
 
-/* .load-more {
-  background-color: white;
-  border-radius: 3px;
+.load-more {
+  display: block;
   margin-left: auto;
   margin-right: auto;
-} */
+}
 
 .btn-invisible {
   position: absolute;
@@ -60,4 +55,10 @@ body {
   overflow: hidden;
   border: 0;
   clip: rect(0000);
+}
+
+.load-more:hover,
+.load-more:focus {
+  background-color: rgb(0, 7, 138);
+  color: white;
 }
