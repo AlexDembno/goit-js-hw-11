@@ -51,7 +51,7 @@ body {
   margin-right: auto;
 } */
 
-/* .btn-invisible {
+.btn-invisible {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -60,4 +60,4 @@ body {
   overflow: hidden;
   border: 0;
   clip: rect(0000);
-} */
+}

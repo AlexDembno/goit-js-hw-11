@@ -2,25 +2,52 @@ const { Notify } = require('notiflix');
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import axios from 'axios';
+import { render } from './render';
+import { refs } from './refs';
 
-const refs = {
-  formEl: document.querySelector('.search-form'),
-  inputEl: document.querySelector('.search-form_input'),
-  divEl: document.querySelector('.gallery'),
-  btnEl: document.querySelector('.load-more'),
-};
-
+let searchText = '';
 const KEY = '31934328-4f49ab69ab8cdfa2acbd8f5df';
 const baseUrl = `https://pixabay.com/api/?key=${KEY}`;
-
 let PAGE = 1;
 
 refs.formEl.addEventListener('submit', getUser);
+refs.btnEl.addEventListener('click', loadMore);
 
 async function getUser(event) {
   event.preventDefault();
-  console.log(event.target.elements.searchQuery.value);
-  const searchText = event.currentTarget.elements.searchQuery.value;
+  clearMarkup();
+  searchText = event.currentTarget.elements.searchQuery.value;
+  if (searchText === '') {
+    Notify.info('Enter search');
+    return;
+  }
+
+  try {
+    const { data } = await axios.get(
+      `${baseUrl}&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true&page=${PAGE}&per_page=40`
+    );
+
+    if (data.hits.length === 0) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      refs.btnEl.classList.add('btn-invisible');
+      return;
+    }
+    Notify.info(`Hooray! We found ${data.totalHits} images.`);
+    console.log(data);
+    const image = data.hits;
+    render(image);
+    lightbox.refresh();
+  } catch (error) {
+    console.error(error);
+  }
+  refs.btnEl.classList.remove('btn-invisible');
+}
+
+async function loadMore(event) {
+  event.preventDefault();
+  PAGE += 1;
 
   try {
     const { data } = await axios.get(
@@ -28,71 +55,31 @@ async function getUser(event) {
     );
     const image = data.hits;
     render(image);
+    lightbox.refresh();
+    qwer();
   } catch (error) {
     console.error(error);
+    Notify.info("We're sorry, but you've reached the end of search results.");
+    refs.btnEl.classList.add('btn-invisible');
   }
 }
 
-refs.btnEl.addEventListener('click', loadMore);
+function clearMarkup() {
+  refs.divEl.innerHTML = '';
+}
 
-async function loadMore(event) {
-  refs.inputEl.addEventListener('input', async () => {
-    console.log(refs.inputEl.value);
-    event.preventDefault();
-    PAGE += 1;
-    console.log(event.target.elements.searchQuery.value);
-    const searchText = input.value;
+function qwer() {
+  const { height: cardHeight } =
+    refs.divEl.firstElementChild.getBoundingClientRect();
 
-    try {
-      const { data } = await axios.get(
-        `${baseUrl}&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true&page=${PAGE}&per_page=40`
-      );
-      const image = data.hits;
-      render(image);
-    } catch (error) {
-      console.error(error);
-    }
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
   });
-
-  // try {
-  //   const { data } = await axios.get(
-  //     `${baseUrl}&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true&page=${PAGE}&per_page=40`
-  //   );
-  //   const image = data.hits;
-  //   render(image);
-  // } catch (error) {
-  //   console.error(error);
-  // }
 }
 
-function render(image) {
-  const markup = image
-    .map(
-      ({
-        webformatURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) => `<div class="photo-card">
-  <img class="gallery-img" src="${webformatURL}" alt="${tags}" loading="lazy" />
-  <div class="info">
-    <p class="info-item">
-      <b>${likes}&ensp;likes</b>
-    </p>
-    <p class="info-item">
-      <b>${views}&ensp;Views</b>
-    </p>
-    <p class="info-item">
-      <b>${comments}&ensp;Comments</b>
-    </p>
-    <p class="info-item">
-      <b>${downloads}&ensp;Downloads</b>
-    </p>
-  </div>
-</div>`
-    )
-    .join('');
-  refs.divEl.insertAdjacentHTML('afterbegin', markup);
-}
+var lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionPosition: 'bottom',
+  captionDelay: 250,
+});
