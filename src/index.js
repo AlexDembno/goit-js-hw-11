@@ -1,14 +1,17 @@
 const { Notify } = require('notiflix');
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import axios from 'axios';
 import { render } from './render';
 import { refs } from './refs';
+import { RequestPixabay } from './request';
 
-let searchText = '';
-const KEY = '31934328-4f49ab69ab8cdfa2acbd8f5df';
-const baseUrl = `https://pixabay.com/api/?key=${KEY}`;
-let PAGE = 1;
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionPosition: 'bottom',
+  captionDelay: 250,
+});
+
+const reqestPixabau = new RequestPixabay();
 
 refs.formEl.addEventListener('submit', getUser);
 refs.btnEl.addEventListener('click', loadMore);
@@ -16,17 +19,16 @@ refs.btnEl.addEventListener('click', loadMore);
 async function getUser(event) {
   event.preventDefault();
   clearMarkup();
-  searchText = event.currentTarget.elements.searchQuery.value;
-  if (searchText === '') {
+
+  reqestPixabau.query = event.currentTarget.elements.searchQuery.value;
+  reqestPixabau.resetPage();
+  if (reqestPixabau.query === '') {
     Notify.info('Enter search');
     return;
   }
 
   try {
-    const { data } = await axios.get(
-      `${baseUrl}&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true&page=${PAGE}&per_page=40`
-    );
-
+    const { data } = await reqestPixabau.reqest();
     if (data.hits.length === 0) {
       Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -35,28 +37,32 @@ async function getUser(event) {
       return;
     }
     Notify.info(`Hooray! We found ${data.totalHits} images.`);
-    console.log(data);
-    const image = data.hits;
-    render(image);
+    render(data.hits);
     lightbox.refresh();
+    if (reqestPixabau.page < Math.ceil(data.totalHits / 40)) {
+      refs.btnEl.classList.remove('btn-invisible');
+    } else {
+      refs.btnEl.classList.add('btn-invisible');
+    }
   } catch (error) {
     console.error(error);
   }
-  refs.btnEl.classList.remove('btn-invisible');
 }
 
 async function loadMore(event) {
   event.preventDefault();
-  PAGE += 1;
+  reqestPixabau.incrementPage();
 
   try {
-    const { data } = await axios.get(
-      `${baseUrl}&q=${searchText}&image_type=photo&orientation=horizontal&safesearch=true&page=${PAGE}&per_page=40`
-    );
-    const image = data.hits;
-    render(image);
+    const { data } = await reqestPixabau.reqest();
+    render(data.hits);
     lightbox.refresh();
-    qwer();
+    pageScrolling();
+    if (reqestPixabau.page < Math.ceil(data.totalHits / 40)) {
+      refs.btnEl.classList.remove('btn-invisible');
+    } else {
+      refs.btnEl.classList.add('btn-invisible');
+    }
   } catch (error) {
     console.error(error);
     Notify.info("We're sorry, but you've reached the end of search results.");
@@ -68,7 +74,7 @@ function clearMarkup() {
   refs.divEl.innerHTML = '';
 }
 
-function qwer() {
+function pageScrolling() {
   const { height: cardHeight } =
     refs.divEl.firstElementChild.getBoundingClientRect();
 
@@ -77,9 +83,3 @@ function qwer() {
     behavior: 'smooth',
   });
 }
-
-var lightbox = new SimpleLightbox('.gallery a', {
-  captionsData: 'alt',
-  captionPosition: 'bottom',
-  captionDelay: 250,
-});
