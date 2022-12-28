@@ -5,6 +5,18 @@ import { render } from './render';
 import { refs } from './refs';
 import { RequestPixabay } from './request';
 
+// ######## loader ########
+const loaderEl = document.querySelector('.loader');
+function addLoader() {
+  return loaderEl.classList.add('loader-run');
+}
+
+function hideLoader() {
+  loaderEl.classList.remove('loader-run');
+}
+
+// ######## loader ########
+
 const lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionPosition: 'bottom',
@@ -26,6 +38,7 @@ async function getUser(event) {
     Notify.info('Enter search');
     return;
   }
+  addLoader();
 
   try {
     const { data } = await reqestPixabau.reqest();
@@ -36,7 +49,9 @@ async function getUser(event) {
       refs.btnEl.classList.add('btn-invisible');
       return;
     }
+    hideLoader();
     Notify.info(`Hooray! We found ${data.totalHits} images.`);
+
     render(data.hits);
     lightbox.refresh();
     if (reqestPixabau.page < Math.ceil(data.totalHits / 40)) {

@@ -1,4 +1,9 @@
 import { refs } from './refs';
+
+function hideLoader() {
+  loaderEl.classList.remove('loader-run');
+}
+
 export function render(image) {
   const markup = image
     .map(
