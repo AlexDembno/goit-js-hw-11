@@ -6,13 +6,29 @@ import { refs } from './refs';
 import { RequestPixabay } from './request';
 
 // ######## loader ########
-const loaderEl = document.querySelector('.loader');
-function addLoader() {
-  return loaderEl.classList.add('loader-run');
+
+const loaderEl = document.querySelector('.preloader-loader');
+const percentsEl = document.querySelector('.percents');
+
+function addLoader(data) {
+  console.log(data.length);
+  let i = 0;
+
+  data.forEach(file => {
+    i++;
+    console.log(file);
+
+    // percentsEl.innerHTML = ((100 / data.length) * i).toFixed(0);
+    percentsEl.innerHTML = ((i * 100) / data.length).toFixed(0);
+  });
+}
+
+function showLoader() {
+  return loaderEl.classList.remove('loader-invisible');
 }
 
 function hideLoader() {
-  loaderEl.classList.remove('loader-run');
+  return loaderEl.classList.add('loader-invisible');
 }
 
 // ######## loader ########
@@ -38,22 +54,28 @@ async function getUser(event) {
     Notify.info('Enter search');
     return;
   }
-  addLoader();
+  showLoader();
 
   try {
     const { data } = await reqestPixabau.reqest();
+
+    addLoader(data.hits);
     if (data.hits.length === 0) {
       Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
       );
+      hideLoader();
       refs.btnEl.classList.add('btn-invisible');
       return;
     }
-    hideLoader();
+
     Notify.info(`Hooray! We found ${data.totalHits} images.`);
 
     render(data.hits);
+
+    console.log(data.hits.length);
     lightbox.refresh();
+    hideLoader();
     if (reqestPixabau.page < Math.ceil(data.totalHits / 40)) {
       refs.btnEl.classList.remove('btn-invisible');
     } else {
