@@ -4,32 +4,11 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import { render } from './render';
 import { refs } from './refs';
 import { RequestPixabay } from './request';
+import { Preloader } from './preloader';
 
 // ######## loader ########
 
-const loaderEl = document.querySelector('.preloader-loader');
-const percentsEl = document.querySelector('.percents');
-
-function addLoader(data) {
-  console.log(data.length);
-  let i = 0;
-
-  data.forEach(file => {
-    i++;
-    console.log(file);
-
-    // percentsEl.innerHTML = ((100 / data.length) * i).toFixed(0);
-    percentsEl.innerHTML = ((i * 100) / data.length).toFixed(0);
-  });
-}
-
-function showLoader() {
-  return loaderEl.classList.remove('loader-invisible');
-}
-
-function hideLoader() {
-  return loaderEl.classList.add('loader-invisible');
-}
+const loader = new Preloader();
 
 // ######## loader ########
 
@@ -54,17 +33,17 @@ async function getUser(event) {
     Notify.info('Enter search');
     return;
   }
-  showLoader();
+  loader.showLoader();
 
   try {
     const { data } = await reqestPixabau.reqest();
 
-    addLoader(data.hits);
+    loader.addLoader(data.hits);
     if (data.hits.length === 0) {
       Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
       );
-      hideLoader();
+      loader.hideLoader();
       refs.btnEl.classList.add('btn-invisible');
       return;
     }
@@ -75,7 +54,7 @@ async function getUser(event) {
 
     console.log(data.hits.length);
     lightbox.refresh();
-    hideLoader();
+    loader.hideLoader();
     if (reqestPixabau.page < Math.ceil(data.totalHits / 40)) {
       refs.btnEl.classList.remove('btn-invisible');
     } else {
