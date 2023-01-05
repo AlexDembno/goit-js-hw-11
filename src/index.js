@@ -1,16 +1,22 @@
-const { Notify } = require('notiflix');
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { render } from './render';
 import { refs } from './refs';
 import { RequestPixabay } from './request';
 import { Preloader } from './preloader';
+import { Notiflix } from './notiflix';
 
 // ######## loader ########
 
 const loader = new Preloader();
 
 // ######## loader ########
+
+// ######## notiflix ########
+
+const showNotiflix = new Notiflix();
+
+// ######## notiflix ########
 
 const lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
@@ -30,7 +36,7 @@ async function getUser(event) {
   reqestPixabau.query = event.currentTarget.elements.searchQuery.value;
   reqestPixabau.resetPage();
   if (reqestPixabau.query === '') {
-    Notify.info('Enter search');
+    showNotiflix.showStart();
     return;
   }
   loader.showLoader();
@@ -40,15 +46,13 @@ async function getUser(event) {
 
     loader.addLoader(data.hits);
     if (data.hits.length === 0) {
-      Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
+      showNotiflix.showFailure();
       loader.hideLoader();
       refs.btnEl.classList.add('btn-invisible');
       return;
     }
 
-    Notify.info(`Hooray! We found ${data.totalHits} images.`);
+    showNotiflix.showInfo(data);
 
     render(data.hits);
 
@@ -78,10 +82,11 @@ async function loadMore(event) {
       refs.btnEl.classList.remove('btn-invisible');
     } else {
       refs.btnEl.classList.add('btn-invisible');
+      showNotiflix.showEnd();
     }
   } catch (error) {
     console.error(error);
-    Notify.info("We're sorry, but you've reached the end of search results.");
+
     refs.btnEl.classList.add('btn-invisible');
   }
 }
